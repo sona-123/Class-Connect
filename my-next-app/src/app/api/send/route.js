@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { EmailTemplate } from '../../_components/EmailTemplate';
 import { Resend } from 'resend';
-const resend = new Resend(process.env.NEXT_RESEND_API_KEY);
+const resend = new Resend(process.env.NEXT_PUBLIC_RESEND_API_KEY);
 export async function POST(req) {
   try {
     console.log("Incoming request body:", req.body);
