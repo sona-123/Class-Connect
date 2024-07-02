@@ -9,8 +9,7 @@ export default function FileShareForm({ file, onPasswordSave }) {
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
   const { user } = useUser();
-  const [recipientEmail,setRecipientEmail]=useState('');
-  console.log(email);
+
   const sendEmail = () => {
     if (!email) {
       alert('Please enter a valid email address.');
@@ -19,13 +18,13 @@ export default function FileShareForm({ file, onPasswordSave }) {
 
     const data = {
       emailToSend: email,
-      userName: user?.fullName || 'User', // Fallback in case user fullName is undefined
+      userName: user?.fullName || 'User',
       fileName: file.fileName,
       fileSize: file.fileSize,
       fileType: file.fileType,
       shortUrl: file.shortUrl,
     };
-    
+
     GlobalApi.SendEmail(data)
       .then(response => {
         if (response.status !== 200) {
@@ -41,8 +40,8 @@ export default function FileShareForm({ file, onPasswordSave }) {
         console.error('Error sending email:', error);
         alert('Failed to send email. Please try again later.');
       });
-      console.log(data);
   };
+
   const onClickCopy = () => {
     navigator.clipboard.writeText(file.shortUrl);
     alert('URL Copied to your clipboard!');
@@ -111,9 +110,7 @@ export default function FileShareForm({ file, onPasswordSave }) {
         </div>
         <button
           className='p-2 disabled:bg-gray-300 bg-primary text-white hover:bg-blue-600 w-full mt-2 rounded-md'
-          
           onClick={sendEmail}
-
           disabled={!email}
         >
           Send Email
