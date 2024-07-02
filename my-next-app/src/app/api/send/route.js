@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import { EmailTemplate } from '../../_components/EmailTemplate';
 import { Resend } from 'resend';

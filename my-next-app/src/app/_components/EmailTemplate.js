@@ -15,7 +15,7 @@ import {
   Text,
 } from "@react-email/components";
 import * as React from "react";
-
+import { Tailwind } from "@react-email/components";
 export const EmailTemplate = async ({
  
   fileName,
