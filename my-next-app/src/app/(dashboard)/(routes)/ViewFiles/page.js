@@ -1,17 +1,16 @@
-"use client";
+"use client"
 import React, { useEffect, useState } from 'react';
-import { getFirestore, collection, query, getDocs, doc, deleteDoc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
 import { app } from '../../../../../firebaseConfig';
 import { useUser } from '@clerk/nextjs';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { Trash } from 'lucide-react'; // Import the Trash icon from Lucide
+import Link from 'next/link';  // Import Link from Next.js
+import { useRouter } from 'next/navigation';  // Import useRouter from Next.js
 
 const FileList = () => {
   const db = getFirestore(app);
   const { user } = useUser();
   const [files, setFiles] = useState([]);
-  const router = useRouter();
+  const router = useRouter();  // Initialize useRouter
 
   useEffect(() => {
     if (user) {
@@ -20,38 +19,16 @@ const FileList = () => {
   }, [user]);
 
   const fetchFiles = async () => {
-    try {
-      const filesCollection = collection(db, "users", user.id, "files");
-      const q = query(filesCollection);
-      const querySnapshot = await getDocs(q);
-      
-      const filesData = [];
-      querySnapshot.forEach((doc) => {
-        filesData.push({ ...doc.data(), id: doc.id });
-      });
-      
-      setFiles(filesData);
-    } catch (error) {
-      console.error('Error fetching files:', error);
-    }
+    const querySnapshot = await getDocs(collection(db, "uploadedFile"));
+    const filesData = [];
+    querySnapshot.forEach((doc) => {
+      filesData.push({ ...doc.data(), id: doc.id });
+    });
+    setFiles(filesData);
   };
 
-  const handleFileClick = (file) => {
-    router.push(file.fileUrl);
-  };
-
-  const handleFileDelete = async (fileId) => {
-    try {
-      const confirmDelete = window.confirm('Are you sure you want to delete this file?');
-      if (confirmDelete) {
-        const docRef = doc(db, "users", user.id, "files", fileId);
-        await deleteDoc(docRef);
-        setFiles(files.filter(file => file.id !== fileId));
-        console.log('File deleted successfully');
-      }
-    } catch (error) {
-      console.error('Error deleting file:', error);
-    }
+  const handleFileClick = (fileId) => {
+    router.push(`/files-preview/${fileId}`);  // Correctly navigate using router.push
   };
 
   return (
@@ -64,13 +41,13 @@ const FileList = () => {
           <thead className="bg-gray-100 border-b border-gray-300">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {files.map((file) => (
               <tr key={file.id}>
-                <td className="px-6 py-4 cursor-pointer" onClick={() => handleFileClick(file)}>
+                <td className="px-6 py-4 cursor-pointer" onClick={() => handleFileClick(file.id)}>
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       <svg className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -84,16 +61,9 @@ const FileList = () => {
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex gap-8">
-                    <Link href={`/files-preview/${file.id}`}>
-                      <span className="text-blue-500 hover:text-blue-600 cursor-pointer">Preview</span>
-                    </Link>
-                    <Trash
-                      className="h-4 w-4  text-red-500 cursor-pointer hover:text-red-600"
-                      onClick={() => handleFileDelete(file.id)}
-                      title="Delete"
-                    />
-                  </div>
+                  <Link href={`/files/${file.id}`}>
+                    <span className="text-blue-500 hover:text-blue-600">Download</span>
+                  </Link>
                 </td>
               </tr>
             ))}

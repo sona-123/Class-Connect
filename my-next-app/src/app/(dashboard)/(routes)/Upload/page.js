@@ -3,20 +3,20 @@ import React, { useEffect, useState } from 'react';
 import UploadForms from './_components/UploadForms';
 import { getDownloadURL, getStorage, uploadBytesResumable, ref } from 'firebase/storage';
 import { app } from '../../../../../firebaseConfig';
-import { doc, getFirestore, setDoc, collection, addDoc } from 'firebase/firestore';
+import { doc, getFirestore, setDoc } from 'firebase/firestore';
 import { useUser } from '@clerk/nextjs';
-import { generateRandomString } from '../../../_utils/GenerateRandomString';
+import {generateRandomString} from '../../../_utils/GenerateRandomString';
 import SuccesMessage from './_components/SuccesMessage';
 import { useRouter } from 'next/navigation';
 
 export default function Upload() {
   const storage = getStorage(app);
   const db = getFirestore(app);
+  const [fileDocId, setFileDocId] = useState();
   const { user } = useUser();
   const router = useRouter();
   const [progress, setProgress] = useState(0);
   const [uploadComplete, setUploadComplete] = useState(false);
-  const [fileDocId, setFileDocId] = useState(null);
 
   const uploadFile = (file) => {
     if (!file) {
@@ -54,28 +54,19 @@ export default function Upload() {
   };
 
   const saveInfo = async (file, fileUrl) => {
-    try {
-      const docId = generateRandomString();
-      
-      // Save file under user's userId in Firestore
-      const userFilesRef = collection(db, "users", user.id, "files");
-      await addDoc(userFilesRef, {
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        fileUrl: fileUrl,
-        shortUrl: process.env.NEXT_PUBLIC_BASE_URL +"f/"+  docId,
-        userId: user.id,
-        uploadedAt: new Date(),
-        id: docId,
-      });
-
-      setFileDocId(docId);
-      setUploadComplete(true);
-      router.push('/successpage'); // Navigate to success page immediately
-    } catch (error) {
-      console.error('Error saving file information:', error);
-    }
+    const docId = generateRandomString().toString();
+    await setDoc(doc(db, "uploadedFile", docId), {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      fileUrl: fileUrl,
+      userEmail: user.primaryEmailAddress.emailAddress,
+      userName: user.fullName,
+      password: '',
+      id: docId,
+      shortUrl: process.env.NEXT_PUBLIC_BASE_URL +"f/"+  docId,
+    });
+    setFileDocId(docId);
   };
 
   useEffect(() => {
@@ -85,24 +76,29 @@ export default function Upload() {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [progress]);
+  }, [progress==100]);
 
   useEffect(() => {
-    if (uploadComplete && fileDocId) {
+    if (uploadComplete) {
       const timer = setTimeout(() => {
         router.push('/files-preview/' + fileDocId);
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [uploadComplete, fileDocId]);
+  }, [uploadComplete==true]);
 
+  
   return (
     <div className='p-5 px-8 md:px-28'>
       {progress === 100 ? <SuccesMessage /> : null}
       <h2 className='text-[20px] text-center m-5'>
         Start <strong className='text-primary'>Uploading</strong> Files and <strong className='text-primary'>Share</strong> it
       </h2>
-      <UploadForms uploadBtnClick={(file) => uploadFile(file)} progress={progress} />
+      <UploadForms
+        uploadBtnClick={(file) => uploadFile(file)}
+        progress={progress}
+      />
     </div>
   );
 }
+
