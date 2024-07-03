@@ -64,7 +64,7 @@ export default function Upload() {
       userName: user.fullName,
       password: '',
       id: docId,
-      shortUrl: process.env.BASE_URL +"f/"+  docId,
+      shortUrl: process.env.NEXT_PUBLIC_BASE_URL +"f/"+  docId,
     });
     setFileDocId(docId);
   };
