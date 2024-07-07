@@ -16,7 +16,7 @@
 
 <img src="https://snipboard.io/D4KCnU.jpg" alt="project-screenshot" width="5000" height="400/">
 
-<img src="https://s3.amazonaws.com/i.snag.gy/wzI9hN.jpg" alt="project-screenshot" width="5000" height="400/">
+
 
   
   
